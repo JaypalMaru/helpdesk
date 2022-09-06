@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_helpdesk_ticket_search" model="ir.ui.view">
+            <field name="name">view.helpdesk.ticket.search</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="arch" type="xml">
+                <search string="Helpdesk Search">
+                    <filter string="Archived" name="inactive" domain="[('active','=',False)]"/>
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="tag_ids"/>
+                    <group expand="0" string="Group By...">
+                        <filter string="Customer" name="customer" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Stage" name="stage" domain="[]" context="{'group_by': 'stage'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_helpdesk_ticket_tree" model="ir.ui.view">
+            <field name="name">view.helpdesk.ticket.tree</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="arch" type="xml">
+                <tree decoration-success="count_days &gt; 0" decoration-danger="count_days &lt; 0">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="user_id"/>
+                    <field name="count_days" invisible="1"/>
+                    <field name="tag_ids" widget="many2many_tags"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_helpdesk_ticket_form" model="ir.ui.view">
+            <field name="name">view.helpdesk.ticket.form</field>
+            <field name="model">helpdesk.ticket</field>
+            <field name="arch" type="xml">
+                <form string="Ticket">
+                    <header>
+                        <button name="assign_self" string="Assign me" class="btn-primary" type="object" attrs="{'invisible' : [('user_id', '!=', False)]}"/>
+                        <field name="stage" widget="statusbar" options="{'clickable': '1'}"/>
+                        <button name="stage_new" string="New" type="object" attrs="{'invisible': [('stage', '=', 'new')]}"/>
+                        <button name="stage_in_progress" string="In Progress" type="object" attrs="{'invisible': [('stage', '=', 'inprogress')]}"/>
+                        <button name="stage_done" string="Done" type="object" attrs="{'invisible': [('stage', '=', 'done')]}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1>
+                                <field name="name" placeholder="Title..." required="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id" required="1"/>
+                                <field name="active" invisible="1" />
+                                <field name="date_deadline" required="1" />
+                                <field name="user_id" attrs="{'readonly': [('login_manager', '=', False)]}"/>
+                                <field name="login_manager" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="tag_ids" widget="many2many_tags" placeholder="Tags..."/>
+                                <field name="phone"/>
+                                <field name="email"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Description" name="internal_notes">
+                                <field name="description" widget="html" placeholder="Add a description..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_helpdesk_ticket" model="ir.actions.act_window">
+            <field name="name">Helpdesk</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">helpdesk.ticket</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_helpdesk_ticket" name="Helpdesk" action="action_helpdesk_ticket"/>
+
+        <record id="action_helpdesk_configuration" model="ir.actions.act_window">
+            <field name="name">Configuration</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">helpdesk.ticket.tag</field>
+        </record>
+
+        <menuitem
+            id="menu_helpdesk_configuration"
+            name="Configuration"
+            sequence="11"
+            parent="menu_helpdesk_ticket"
+            action="action_helpdesk_configuration"/>
+
+        <menuitem
+            id="menu_helpdesk_ticket_customer"
+            name="Customers"
+            parent="menu_helpdesk_ticket"
+            action="base.action_partner_form"/>
+    </data>
+</odoo>
